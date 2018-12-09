@@ -1,0 +1,10 @@
+[Addon]
+Name=fcitx-fcitxbihuainputmethod
+_GeneralName=FcitxBiHuaInputMethod Addon of Fcitx
+_Comment=
+Category=Module
+Enabled=True
+Library=fcitx-fcitxbihuainputmethod.so
+Type=SharedLibrary
+Dependency=
+Priority=80

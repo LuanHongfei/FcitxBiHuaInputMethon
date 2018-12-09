@@ -1,0 +1,8 @@
+[FcitxAddon]
+Name=fcitx-fcitxbihuainputmethod
+Prefix=FcitxBiHuaInputMethod
+Include0="fcitxbihuainputmethod.h"
+Function0=
+Function1=
+Function2=
+Self.Type=FcitxFcitxBiHuaInputMethod*
