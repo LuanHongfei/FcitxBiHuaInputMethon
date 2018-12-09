@@ -1,0 +1,9 @@
+[Addon]
+Name=fcitx-bh
+_GeneralName=笔画
+_Comment=Fcitx 的笔画输入法
+Category=InputMethod
+Enabled=False
+Library=fcitx-bh.so
+Type=SharedLibrary
+IMRegisterMethod=ConfigFile

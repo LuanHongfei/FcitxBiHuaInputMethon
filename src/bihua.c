@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) YEAR~YEAR by Your Name                                  *
- *   your-email@address.com                                                *
+ *   Copyright (C) 2002~2005 by Yuking                                     *
+ *   yuking_net@sohu.com                                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,7 +17,58 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
+#include "bihua.h"
+#include "Thesaurus.h"
 
-#ifndef _FCITX_FCITXBIHUAINPUTMETHOD_H_
-#define _FCITX_FCITXBIHUAINPUTMETHOD_H_
-#endif
+FCITX_DEFINE_PLUGIN (fcitx_bh, ime, FcitxIMClass) = {
+	BHCreate,
+	BHDestroy
+};
+
+void* BHCreate (struct _FcitxInstance* instance)
+{
+	FcitxBiHuaState* bhstate = malloc (sizeof (FcitxBiHuaState));
+	bhstate->words = (BWord*) getWords (&bhstate->wordSize);
+	if (bhstate->words == NULL) {
+		free (bhstate);
+		return NULL;
+	}
+	FcitxInstanceRegisterIM (
+		instance,
+		bhstate,
+		"bihua",
+		"笔画",
+		"bihua",
+		BHInit,
+		NULL,
+		DoBHInput,
+		BHGetCandWords,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		100 /* make quwei place at last */,
+		"zh_CN"
+	);
+	bhstate->owner = instance;
+	bhstate->lastInput = NULL;
+	return bhstate;
+}
+
+boolean BHInit (void* arg)
+{
+	FcitxBiHuaState* bhstate = (FcitxBiHuaState*) arg;
+	FcitxInstanceSetContext (bhstate->owner, CONTEXT_IM_KEYBOARD_LAYOUT, "us");
+	boolean flag = true;
+    FcitxInstanceSetContext(bhstate->owner, CONTEXT_SHOW_REMIND_STATUS, &flag);
+	return true;
+}
+
+void BHDestroy (void* arg)
+{
+	FcitxBiHuaState* bhstate = (FcitxBiHuaState*) arg;
+	free (bhstate);
+}
+
+// kate: indent-mode cstyle; indent-width 4; replace-tabs off; tab-width 4; 
+

@@ -1,0 +1,7 @@
+[InputMethod]
+UniqueName=笔画
+_Name=笔画
+IconName=bihua
+Priority=0
+LangCode=zh_CN
+Parent=fcitx-bh
