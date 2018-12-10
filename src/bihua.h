@@ -39,20 +39,7 @@ extern int getCandidateWordForThesaurus (FcitxBiHuaState* bhstate, FcitxCandidat
 extern char* keyCode2Msg (const char* raw_buff);
 extern void BHDestroy (void* arg);
 extern boolean matchKeyCode (const char* src , const char* dest);
-inline boolean isKeyCode (char c)
-{
-	switch (c) {
-		case 'i':
-		case 'o':
-		case 'p':
-		case 'k':
-		case 'l':
-		case 'm':
-			return true;
-	}
-	return false;
-}
-
+extern boolean isKeyCode (char c);
 extern struct BWord* getWords (int* size);
 
 #endif

@@ -45,8 +45,11 @@ INPUT_RETURN_VALUE DoBHInput (void* arg, FcitxKeySym sym, unsigned int state)
 		}
 	} else {	//按下其它键
 		FcitxCandidateWordList* canList = FcitxInputStateGetCandidateList (input);
-		if (!FcitxCandidateWordGetListSize (canList) && !FcitxInputStateGetRawInputBufferSize (input)) {	//缓冲区或候选词表内没有数据
+		if (!FcitxCandidateWordGetListSize (canList) && !FcitxInputStateGetRawInputBufferSize (input)) {	//缓冲区和候选词表内没有数据
 			return IRV_TO_PROCESS;	//让fcitx自行处理
+		}
+		if (!FcitxHotkeyIsHotKey(sym,state,FCITX_ESCAPE)) {
+			return IRV_DO_NOTHING;
 		}
 		if (FcitxInputStateGetRawInputBufferSize(input)) {	//缓冲区内还有数据
 			strCodeInput[0] = 0;	//将缓冲区第一个字符置零
@@ -55,8 +58,8 @@ INPUT_RETURN_VALUE DoBHInput (void* arg, FcitxKeySym sym, unsigned int state)
 		}
 		if (FcitxCandidateWordGetListSize (canList)) { //候选词表中还有数据
 			FcitxCandidateWordReset (FcitxInputStateGetCandidateList (input));	//清空候选词表
+			return IRV_CLEAN;
 		}
-		return IRV_CLEAN;
 	}
 	return retVal;
 }
@@ -104,4 +107,18 @@ boolean matchKeyCode (const char* src , const char* dest)
 			return false;
 	}
 	return true;
+}
+
+boolean isKeyCode (char c)
+{
+	switch (c) {
+		case 'i':
+		case 'o':
+		case 'p':
+		case 'k':
+		case 'l':
+		case 'm':
+			return true;
+	}
+	return false;
 }
