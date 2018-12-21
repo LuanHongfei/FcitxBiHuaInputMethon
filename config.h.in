@@ -1,4 +1,4 @@
 #ifndef ___CONFIG_H___
 #define ___CONFIG_H___
-
+#define DATA_PATH "@DATADIR@"
 #endif /* __CONFIG_H__ */
