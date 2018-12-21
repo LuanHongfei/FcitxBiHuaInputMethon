@@ -19,6 +19,7 @@
  ***************************************************************************/
 #include "bihua.h"
 #include "Thesaurus.h"
+#include "FreqList.h"
 
 FCITX_DEFINE_PLUGIN (fcitx_bh, ime, FcitxIMClass) = {
 	BHCreate,
@@ -52,6 +53,11 @@ void* BHCreate (struct _FcitxInstance* instance)
 	);
 	bhstate->owner = instance;
 	bhstate->lastInput = NULL;
+	char * freqFile;
+	newString(freqFile,strlen("/.config/bihua_freq") + strlen(getenv("HOME")));
+	sprintf(freqFile,"%s/.config/bihua_freq",getenv("HOME"));
+	bhstate->freqList = openFreqList(freqFile);
+	free(freqFile);
 	return bhstate;
 }
 
@@ -67,6 +73,8 @@ boolean BHInit (void* arg)
 void BHDestroy (void* arg)
 {
 	FcitxBiHuaState* bhstate = (FcitxBiHuaState*) arg;
+	saveFreqList(bhstate->freqList);
+	freeFreqList(bhstate->freqList);
 	free (bhstate);
 }
 

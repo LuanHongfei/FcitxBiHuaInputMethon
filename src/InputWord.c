@@ -1,5 +1,7 @@
 #include "bihua.h"
 #include "Thesaurus.h"
+#include "FreqList.h"
+
 INPUT_RETURN_VALUE BHGetCandWord (void* arg, FcitxCandidateWord* candWord)
 {
 	FcitxBiHuaState* bhstate = (FcitxBiHuaState*) arg;
@@ -11,6 +13,7 @@ INPUT_RETURN_VALUE BHGetCandWord (void* arg, FcitxCandidateWord* candWord)
 		free (bhstate->lastInput);
 		bhstate->lastInput = NULL;
 	}
+	wordFreqAppend(bhstate->freqList,word);
 	if (BHGetRemindCandWords (bhstate, word) == IRV_DISPLAY_CANDWORDS) {
 		FcitxMessages* preedit = FcitxInputStateGetPreedit (input);
 		FcitxMessagesSetMessageCount (preedit, 0);
@@ -36,7 +39,8 @@ INPUT_RETURN_VALUE BHGetRemindCandWord (void* arg, FcitxCandidateWord* candWord)
 	sprintf (sInput, "%s%s", bhstate->lastInput, word);
 	free (bhstate->lastInput);
 	bhstate->lastInput = sInput;
-	if (BHGetRemindCandWords (bhstate, bhstate->lastInput) == IRV_DISPLAY_CANDWORDS) {
+	wordFreqAppend(bhstate->freqList,sInput);
+	if (BHGetRemindCandWords (bhstate, bhstate->lastInput) == IRV_DISPLAY_CANDWORDS) {	//还有联想词汇
 		retVal = IRV_COMMIT_STRING_REMIND;
 	}
 	free (word);
@@ -93,7 +97,7 @@ void getCandidateWord (FcitxBiHuaState* bhstate, FcitxCandidateWordList* cand_li
 			candWord.strExtra = NULL;
 			candWord.strWord = strdup (bw[i].word);
 			candWord.wordType = MSG_OTHER;
-			FcitxCandidateWordAppend (cand_list, &candWord);
+			candidateWordAppend (cand_list, &candWord,NULL);
 		}
 	}
 }
@@ -119,9 +123,59 @@ int getCandidateWordForThesaurus (FcitxBiHuaState* bhstate, FcitxCandidateWordLi
 			candWord.strExtra = NULL;
 			candWord.strWord = strdup (thesaurus[i] + iSize);
 			candWord.wordType = MSG_OTHER;
-			FcitxCandidateWordAppend (cand_list, &candWord);
+			candidateWordAppend (cand_list, &candWord,word);
 			++n;
 		}
 	}
 	return n;
+}
+
+void candidateWordAppend(FcitxCandidateWordList* cand_list, FcitxCandidateWord * candWord,const char * remindWord)
+{
+	if (candWord == NULL)
+		return;
+	if (cand_list == NULL)
+		return;
+	FcitxBiHuaState *bhstate = (FcitxBiHuaState *) candWord->owner;
+	char * nWord;
+	char * word = candWord->strWord;
+	int remindLen = 0;
+	if (remindWord) {
+		remindLen = strlen(remindWord);
+;		newString(nWord,strlen(word) + remindLen);
+		strcpy(nWord,remindWord);
+		strcat(nWord,word);
+	} else {
+		nWord = strdup(word);
+	}
+
+	int iCount = FcitxCandidateWordGetListSize(cand_list);
+	int freq = getWordFreq(bhstate->freqList,nWord);
+	free(nWord);
+	if (freq == -1 || iCount == 0) {
+		FcitxCandidateWordAppend (cand_list, candWord);
+	} else {
+		FcitxCandidateWord * cand = NULL;
+		for (int i = 0;FcitxCandidateWordHasNext(cand_list);++i) {
+			if (cand  != NULL) {
+				cand = FcitxCandidateWordGetNext(cand_list,cand);
+			} else {
+				cand = FcitxCandidateWordGetFirst(cand_list);
+			}
+			newString(nWord,strlen(cand->strWord) + remindLen);
+			if (remindWord) {
+				strcpy(nWord,remindWord);
+				strcat(nWord,cand->strWord);
+			} else {
+				strcpy(nWord,cand->strWord);
+			}
+			if (freq > getWordFreq(bhstate->freqList,nWord)) {
+				free(nWord);
+				FcitxCandidateWordInsert(cand_list,candWord,i);
+				return;
+			}
+			free(nWord);
+		}
+		FcitxCandidateWordAppend (cand_list, candWord);
+	}
 }
